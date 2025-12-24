@@ -21,14 +21,13 @@ const map = L.map("map", {
   markerZoomAnimation: false,
   fadeAnimation: false,
 
-  dragging: false,
+  dragging: false,          
+  doubleClickZoom: false,  
 
-  doubleClickZoom: false,
-
-  touchZoom: true,
-  boxZoom: false,
-  keyboard: false
+  touchZoom: true,         
+  tap: false               
 }).setView([18.22, 42.50], 12);
+
 
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
