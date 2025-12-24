@@ -19,8 +19,17 @@ const lngInput  = document.getElementById("lng");
 const map = L.map("map", {
   zoomAnimation: false,
   markerZoomAnimation: false,
-  fadeAnimation: false
+  fadeAnimation: false,
+
+  dragging: false,
+
+  doubleClickZoom: false,
+
+  touchZoom: true,
+  boxZoom: false,
+  keyboard: false
 }).setView([18.22, 42.50], 12);
+
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: "© OpenStreetMap"
