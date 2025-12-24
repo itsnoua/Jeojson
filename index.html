@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>🌸🌸🌸</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="map-wrap">
+    <div id="map"></div>
+
+   
+    <div class="topbar floating">
+      <div class="field">
+        <label for="lat">Latitude</label>
+        <input id="lat" type="number" step="any" placeholder="الي يبدأ بـ 18" />
+      </div>
+
+      <div class="field">
+        <label for="lng">Longitude</label>
+        <input id="lng" type="number" step="any" placeholder="الي يبدأ بـ 42" />
+      </div>
+
+      <button id="checkBtn">🌸</button>
+
+      <div id="result" class="result">
+      </div>
+    </div>
+
+    <!-- Overlay: تأثيرات فهد ونايف (اختياري) -->
+    <div id="overlay" class="overlay" aria-hidden="true">
+      <img id="overlayImg" src="assets/game-over.png" alt="overlay" class="overlay-img">
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+  <script src="main.js?v=3001"></script>
+
+</body>
+</html>
