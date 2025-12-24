@@ -137,8 +137,8 @@ checkBtn.addEventListener("click", () => {
   if (!sectorsGeojson) return;
 
   const pt = turf.point([lng, lat]);
-
   let hitIndex = null;
+
   for (let i = 0; i < sectorsGeojson.features.length; i++) {
     if (turf.booleanPointInPolygon(pt, sectorsGeojson.features[i])) {
       hitIndex = i;
@@ -146,9 +146,11 @@ checkBtn.addEventListener("click", () => {
     }
   }
 
-  if (marker) map.removeLayer(marker);
-  marker = L.marker([lat, lng]).addTo(map);
-  map.setView([lat, lng], 16);
+  if (marker) {
+    marker.setLatLng([lat, lng]);
+  } else {
+    marker = L.marker([lat, lng]).addTo(map);
+  }
 
   unhighlightPrev();
 
@@ -160,3 +162,4 @@ checkBtn.addEventListener("click", () => {
   highlightIdx(hitIndex);
   showTop(hitIndex);
 });
+
