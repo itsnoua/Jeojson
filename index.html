@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>🌸🌸🌸</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="map-wrap">
+    <div id="map"></div>
+
+   
+    <div class="topbar floating">
+      <div class="category-selector">
+        <button id="btn940" class="cat-btn active">استاذ بندر🤚</button>
+        <button id="btnEvening" class="cat-btn">الرقابة المسائية</button>
+      </div>
+
+      <div class="coords">
+        <div class="field">
+          <label for="lat">Latitude</label>
+          <input id="lat" type="number" step="any" placeholder="18..." />
+        </div>
+
+        <div class="field">
+          <label for="lng">Longitude</label>
+          <input id="lng" type="number" step="any" placeholder="42..." />
+        </div>
+      </div>
+
+      <button id="checkBtn">تحقق 🔍</button>
+
+      <div id="result" class="result">
+        ( ﾉ ﾟｰﾟ)ﾉ
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+  <script src="main.js?v=3001"></script>
+
+</body>
+</html>
