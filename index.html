@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>🌸🌸🌸</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="map-wrap">
+    <div id="map"></div>
+
+   
+    <div class="topbar floating">
+      <div class="category-selector">
+        <button id="btnRaqaba" class="cat-btn active">الرقابة</button>
+        <button id="btnEvening" class="cat-btn">الرقابة المسائية</button>
+      </div>
+
+      <div class="coords">
+        <div class="field">
+          <label for="lat">Latitude</label>
+          <input id="lat" type="number" step="any" placeholder="18..." />
+        </div>
+
+        <div class="field">
+          <label for="lng">Longitude</label>
+          <input id="lng" type="number" step="any" placeholder="42..." />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="gmaps-link">رابط أو إحداثيات قوقل ماب</label>
+        <input id="gmaps-link" type="text" placeholder="https://maps.google.com/?q=..." style="direction: ltr; text-align: left;" />
+      </div>
+
+      <button id="checkBtn">🌸</button>
+
+      <div class="dev-controls" style="display: none; gap: 8px;">
+        <button id="toggleEditBtn" style="flex: 1; height: 36px; font-size: 11px; border-radius: 10px; border: 1px dashed #222; background: #fff; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: bold;">🛠️ تعديل المواقع: مغلق</button>
+        <button id="exportPositionsBtn" style="flex: 1; height: 36px; font-size: 11px; border-radius: 10px; border: 1px solid #222; background: #222; color: #fff; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: bold; display: none;">💾 تصدير الأماكن</button>
+      </div>
+
+      <div id="result" class="result">
+        ( ﾉ ﾟｰﾟ)ﾉ
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+  <script src="main.js?v=3021"></script>
+
+</body>
+</html>
