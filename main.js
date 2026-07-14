@@ -612,15 +612,11 @@ function updateDimensions() {
   }
 
   const H = topbar.getBoundingClientRect().height;
-  const btnRect = toggleSheetBtn.getBoundingClientRect();
-  const selectorRect = categorySelector.getBoundingClientRect();
-  
   const topbarStyle = window.getComputedStyle(topbar);
   const paddingTop = parseFloat(topbarStyle.paddingTop) || 10;
-  const gap = parseFloat(topbarStyle.gap) || 8;
   
-  // Peek height = paddingTop + toggleSheetBtnHeight + gap + categorySelectorHeight + paddingTop
-  const P = paddingTop + btnRect.height + gap + selectorRect.height + paddingTop;
+  // Peek height = paddingTop + toggleSheetBtnHeight + paddingTop (Only the arrow button is visible!)
+  const P = paddingTop + toggleSheetBtn.getBoundingClientRect().height + paddingTop;
   maxTranslateY = Math.max(0, H - P);
 
   // Smooth slide-in/out transition
