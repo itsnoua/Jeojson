@@ -599,9 +599,10 @@ let currentTranslateY = 0;
 let isExpanded = true;
 let maxTranslateY = 0;
 let dragStartTime = 0;
+let startTarget = null;
 
 function isMobile() {
-  return window.innerWidth <= 600;
+  return window.innerWidth <= 768; // Wider mobile breakpoint (768px)
 }
 
 function updateDimensions() {
@@ -644,12 +645,13 @@ function expandSheet() {
   }
 }
 
-function onDragStart(y) {
+function onDragStart(y, target) {
   if (!isMobile()) return;
   isDragging = true;
   startY = y;
   startTranslateY = currentTranslateY;
   dragStartTime = Date.now();
+  startTarget = target;
   topbar.style.transition = 'none'; // Disable transition for 1:1 finger tracking
 }
 
@@ -679,9 +681,11 @@ function onDragEnd() {
   const dragDistance = Math.abs(currentTranslateY - startTranslateY);
   const dragDuration = Date.now() - dragStartTime;
 
-  // If clicked/tapped (short duration, small distance), toggle state
+  // If clicked/tapped (short duration, small distance) ON the drag handle, toggle state
   if (dragDistance < 6 && dragDuration < 250) {
-    isExpanded = !isExpanded;
+    if (startTarget && (startTarget === dragHandle || dragHandle.contains(startTarget))) {
+      isExpanded = !isExpanded;
+    }
   } else {
     // Snap logic based on drag direction and threshold
     const threshold = maxTranslateY / 3;
@@ -700,42 +704,77 @@ function onDragEnd() {
   updateDimensions();
 }
 
-// Attach Touch Events
-if (dragHandle) {
-  dragHandle.addEventListener("touchstart", (e) => {
-    onDragStart(e.touches[0].clientY);
-    e.preventDefault(); // Prevents map/browser drag
+// Attach Touch/Mouse Events to the entire topbar container (excluding interactive controls)
+if (topbar && dragHandle) {
+  
+  // Helper function to check if target is an interactive element
+  function isInteractive(target) {
+    if (!target) return false;
+    const tagName = target.tagName.toLowerCase();
+    return (
+      tagName === "input" ||
+      tagName === "button" ||
+      tagName === "textarea" ||
+      tagName === "select" ||
+      target.closest(".category-selector") ||
+      target.closest(".dev-controls")
+    );
+  }
+
+  // Touch Events
+  topbar.addEventListener("touchstart", (e) => {
+    if (!isMobile()) return;
+    if (isInteractive(e.target)) return;
+
+    onDragStart(e.touches[0].clientY, e.target);
+    
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation(); // Prevents event from bubbling to Leaflet map
   }, { passive: false });
 
   window.addEventListener("touchmove", (e) => {
     if (isDragging) {
       onDragMove(e.touches[0].clientY);
       if (e.cancelable) e.preventDefault();
+      e.stopPropagation();
     }
   }, { passive: false });
 
-  window.addEventListener("touchend", () => {
+  window.addEventListener("touchend", (e) => {
+    if (isDragging) {
+      onDragEnd();
+      e.stopPropagation();
+    }
+  });
+
+  window.addEventListener("touchcancel", () => {
     if (isDragging) {
       onDragEnd();
     }
   });
 
-  // Attach Mouse Events
-  dragHandle.addEventListener("mousedown", (e) => {
-    onDragStart(e.clientY);
+  // Mouse Events
+  topbar.addEventListener("mousedown", (e) => {
+    if (!isMobile()) return;
+    if (isInteractive(e.target)) return;
+
+    onDragStart(e.clientY, e.target);
     e.preventDefault();
+    e.stopPropagation();
   });
 
   window.addEventListener("mousemove", (e) => {
     if (isDragging) {
       onDragMove(e.clientY);
       e.preventDefault();
+      e.stopPropagation();
     }
   });
 
-  window.addEventListener("mouseup", () => {
+  window.addEventListener("mouseup", (e) => {
     if (isDragging) {
       onDragEnd();
+      e.stopPropagation();
     }
   });
 
