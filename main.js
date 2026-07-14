@@ -644,13 +644,17 @@ function expandSheet() {
   }
 }
 
-// Click listener to toggle the sheet state
+// Click & Touch listener to toggle the sheet state with zero delay
 if (toggleSheetBtn) {
-  toggleSheetBtn.addEventListener("click", (e) => {
+  const toggleAction = (e) => {
     isExpanded = !isExpanded;
     updateDimensions();
+    if (e.cancelable) e.preventDefault();
     e.stopPropagation(); // Prevents map/parent click side-effects
-  });
+  };
+
+  toggleSheetBtn.addEventListener("click", toggleAction);
+  toggleSheetBtn.addEventListener("touchstart", toggleAction, { passive: false });
 
   // Dynamic layout changes tracking
   const resizeObserver = new ResizeObserver(() => {
