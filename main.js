@@ -586,55 +586,54 @@ if (toggleEditBtn && exportPositionsBtn) {
 
 
 // ----------------------------------------------------
-// BOTTOM SHEET DRAG & DROP FOR MOBILE
+// BOTTOM SHEET TOGGLE BUTTON FOR MOBILE
 // ----------------------------------------------------
 const topbar = document.querySelector(".topbar.floating");
-const dragHandle = document.getElementById("dragHandle");
+const toggleSheetBtn = document.getElementById("toggleSheetBtn");
 const categorySelector = document.querySelector(".category-selector");
 
-let isDragging = false;
-let startY = 0;
-let startTranslateY = 0;
-let currentTranslateY = 0;
 let isExpanded = true;
 let maxTranslateY = 0;
-let dragStartTime = 0;
-let startTarget = null;
+let currentTranslateY = 0;
 
 function isMobile() {
-  return window.innerWidth <= 768; // Wider mobile breakpoint (768px)
+  return window.innerWidth <= 768; // Mobile & Tablet breakpoint (768px)
 }
 
 function updateDimensions() {
-  if (!topbar || !dragHandle || !categorySelector) return;
+  if (!topbar || !toggleSheetBtn || !categorySelector) return;
   
   if (!isMobile()) {
     topbar.style.transform = '';
     topbar.style.transition = '';
+    topbar.classList.remove("collapsed");
     currentTranslateY = 0;
     return;
   }
 
   const H = topbar.getBoundingClientRect().height;
-  const handleRect = dragHandle.getBoundingClientRect();
+  const btnRect = toggleSheetBtn.getBoundingClientRect();
   const selectorRect = categorySelector.getBoundingClientRect();
   
   const topbarStyle = window.getComputedStyle(topbar);
   const paddingTop = parseFloat(topbarStyle.paddingTop) || 10;
   const gap = parseFloat(topbarStyle.gap) || 8;
   
-  // Peek height represents height of padding + drag handle + gap + category selector + padding
-  const P = paddingTop + handleRect.height + gap + selectorRect.height + paddingTop;
+  // Peek height = paddingTop + toggleSheetBtnHeight + gap + categorySelectorHeight + paddingTop
+  const P = paddingTop + btnRect.height + gap + selectorRect.height + paddingTop;
   maxTranslateY = Math.max(0, H - P);
 
-  if (!isDragging) {
-    if (isExpanded) {
-      topbar.style.transform = 'translateY(0)';
-      currentTranslateY = 0;
-    } else {
-      topbar.style.transform = `translateY(${maxTranslateY}px)`;
-      currentTranslateY = maxTranslateY;
-    }
+  // Smooth slide-in/out transition
+  topbar.style.transition = 'transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+
+  if (isExpanded) {
+    topbar.style.transform = 'translateY(0)';
+    topbar.classList.remove("collapsed");
+    currentTranslateY = 0;
+  } else {
+    topbar.style.transform = `translateY(${maxTranslateY}px)`;
+    topbar.classList.add("collapsed");
+    currentTranslateY = maxTranslateY;
   }
 }
 
@@ -645,137 +644,12 @@ function expandSheet() {
   }
 }
 
-function onDragStart(y, target) {
-  if (!isMobile()) return;
-  isDragging = true;
-  startY = y;
-  startTranslateY = currentTranslateY;
-  dragStartTime = Date.now();
-  startTarget = target;
-  topbar.style.transition = 'none'; // Disable transition for 1:1 finger tracking
-}
-
-function onDragMove(y) {
-  if (!isDragging) return;
-  const deltaY = y - startY;
-  let nextTranslateY = startTranslateY + deltaY;
-
-  // Rubber band effect when dragging outside bounds
-  if (nextTranslateY < 0) {
-    nextTranslateY = nextTranslateY * 0.2; 
-  } else if (nextTranslateY > maxTranslateY) {
-    nextTranslateY = maxTranslateY + (nextTranslateY - maxTranslateY) * 0.2;
-  }
-
-  topbar.style.transform = `translateY(${nextTranslateY}px)`;
-  currentTranslateY = nextTranslateY;
-}
-
-function onDragEnd() {
-  if (!isDragging) return;
-  isDragging = false;
-
-  // Restore premium bounce transition
-  topbar.style.transition = 'transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
-
-  const dragDistance = Math.abs(currentTranslateY - startTranslateY);
-  const dragDuration = Date.now() - dragStartTime;
-
-  // If clicked/tapped (short duration, small distance) ON the drag handle, toggle state
-  if (dragDistance < 6 && dragDuration < 250) {
-    if (startTarget && (startTarget === dragHandle || dragHandle.contains(startTarget))) {
-      isExpanded = !isExpanded;
-    }
-  } else {
-    // Snap logic based on drag direction and threshold
-    const threshold = maxTranslateY / 3;
-    if (isExpanded) {
-      if (currentTranslateY > threshold) {
-        isExpanded = false;
-      }
-    } else {
-      const dragUpAmount = maxTranslateY - currentTranslateY;
-      if (dragUpAmount > threshold) {
-        isExpanded = true;
-      }
-    }
-  }
-
-  updateDimensions();
-}
-
-// Attach Touch/Mouse Events to the entire topbar container (excluding interactive controls)
-if (topbar && dragHandle) {
-  
-  // Helper function to check if target is an interactive element
-  function isInteractive(target) {
-    if (!target) return false;
-    const tagName = target.tagName.toLowerCase();
-    return (
-      tagName === "input" ||
-      tagName === "button" ||
-      tagName === "textarea" ||
-      tagName === "select" ||
-      target.closest(".category-selector") ||
-      target.closest(".dev-controls")
-    );
-  }
-
-  // Touch Events
-  topbar.addEventListener("touchstart", (e) => {
-    if (!isMobile()) return;
-    if (isInteractive(e.target)) return;
-
-    onDragStart(e.touches[0].clientY, e.target);
-    
-    if (e.cancelable) e.preventDefault();
-    e.stopPropagation(); // Prevents event from bubbling to Leaflet map
-  }, { passive: false });
-
-  window.addEventListener("touchmove", (e) => {
-    if (isDragging) {
-      onDragMove(e.touches[0].clientY);
-      if (e.cancelable) e.preventDefault();
-      e.stopPropagation();
-    }
-  }, { passive: false });
-
-  window.addEventListener("touchend", (e) => {
-    if (isDragging) {
-      onDragEnd();
-      e.stopPropagation();
-    }
-  });
-
-  window.addEventListener("touchcancel", () => {
-    if (isDragging) {
-      onDragEnd();
-    }
-  });
-
-  // Mouse Events
-  topbar.addEventListener("mousedown", (e) => {
-    if (!isMobile()) return;
-    if (isInteractive(e.target)) return;
-
-    onDragStart(e.clientY, e.target);
-    e.preventDefault();
-    e.stopPropagation();
-  });
-
-  window.addEventListener("mousemove", (e) => {
-    if (isDragging) {
-      onDragMove(e.clientY);
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  });
-
-  window.addEventListener("mouseup", (e) => {
-    if (isDragging) {
-      onDragEnd();
-      e.stopPropagation();
-    }
+// Click listener to toggle the sheet state
+if (toggleSheetBtn) {
+  toggleSheetBtn.addEventListener("click", (e) => {
+    isExpanded = !isExpanded;
+    updateDimensions();
+    e.stopPropagation(); // Prevents map/parent click side-effects
   });
 
   // Dynamic layout changes tracking

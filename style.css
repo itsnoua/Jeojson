@@ -58,34 +58,35 @@ html, body {
   touch-action: manipulation;
 }
 
-.drag-handle {
+.toggle-sheet-btn {
   display: none; /* Hidden on desktop */
   width: 100%;
-  height: 32px;
-  margin-top: -8px;
-  margin-bottom: -4px;
+  height: 28px;
   align-items: center;
   justify-content: center;
-  cursor: grab;
-  user-select: none;
-  touch-action: none !important; /* Prevents default scroll behaviors when dragging */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 4px 0;
+  margin-top: -6px;
+  margin-bottom: -2px;
+  outline: none;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
 }
 
-.drag-handle:active {
-  cursor: grabbing;
+.toggle-sheet-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #000;
 }
 
-.handle-bar {
-  width: 38px;
-  height: 5px;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 10px;
-  transition: background 0.2s, width 0.2s;
+.arrow-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.drag-handle:hover .handle-bar {
-  background: rgba(0, 0, 0, 0.3);
-  width: 44px;
+.topbar.floating.collapsed .arrow-icon {
+  transform: rotate(180deg);
 }
 
 .topbar.floating .category-selector{
@@ -230,7 +231,7 @@ html, body {
     gap: 8px !important;
   }
 
-  .drag-handle {
+  .toggle-sheet-btn {
     display: flex !important;
   }
 
