@@ -50,11 +50,42 @@ html, body {
   gap: 10px;
 
   pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); /* Premium bounce effect */
 }
 
 .topbar.floating *{
   pointer-events: auto;
   touch-action: manipulation;
+}
+
+.drag-handle {
+  display: none; /* Hidden on desktop */
+  width: 100%;
+  height: 20px;
+  margin-top: -6px;
+  margin-bottom: -2px;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+  touch-action: none; /* Prevents default scroll behaviors when dragging */
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.handle-bar {
+  width: 38px;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  transition: background 0.2s, width 0.2s;
+}
+
+.drag-handle:hover .handle-bar {
+  background: rgba(0, 0, 0, 0.3);
+  width: 44px;
 }
 
 .topbar.floating .category-selector{
@@ -197,6 +228,10 @@ html, body {
     max-width: none;
     padding: 10px !important;
     gap: 8px !important;
+  }
+
+  .drag-handle {
+    display: flex !important;
   }
 
   .topbar.floating .coords{

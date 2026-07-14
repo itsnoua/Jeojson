@@ -172,9 +172,11 @@ function showTop(idx){
   const info = MANUAL[idx];
   if (!info) {
     resultBox.textContent = `القطاع رقم ${idx} غير معرف`;
+    expandSheet();
     return;
   }
   resultBox.textContent = `النطاق: ${info.sector} — المراقب: ${info.inspector}`;
+  expandSheet();
 }
 
 function loadCategory(cat) {
@@ -328,6 +330,7 @@ checkBtn.addEventListener("click", () => {
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
     resultBox.textContent = "اكتب الاحداثيات صح 😒";
+    expandSheet();
     return;
   }
   if (!sectorsGeojson) return;
@@ -352,6 +355,7 @@ checkBtn.addEventListener("click", () => {
 
   if (hitIndex === null) {
     resultBox.textContent = "خارج جميع النطاقات";
+    expandSheet();
     return;
   }
 
@@ -420,6 +424,7 @@ if (gmapsInput) {
     // 2. Resolve mobile short URLs (maps.app.goo.gl or goo.gl/maps or g.co/maps)
     if (val.includes("maps.app.goo.gl") || val.includes("goo.gl/maps") || val.includes("g.co/maps")) {
       resultBox.innerHTML = "⏳ جاري فك رابط الجوال المختصر... 🔄";
+      expandSheet();
 
       // Strip query parameters to avoid API request errors on unshorten.me
       const cleanUrl = val.split('?')[0];
@@ -461,6 +466,7 @@ if (gmapsInput) {
             .catch(proxyErr => {
               console.error("All resolution attempts failed:", proxyErr);
               resultBox.innerHTML = "⚠️ فشل فك الرابط تلقائياً. يرجى كتابة أو لصق الإحداثيات مباشرة (مثل: 18.22, 42.50).";
+              expandSheet();
             });
         });
     }
@@ -575,6 +581,173 @@ if (toggleEditBtn && exportPositionsBtn) {
     modal.appendChild(closeBtn);
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
+  });
+}
+
+
+// ----------------------------------------------------
+// BOTTOM SHEET DRAG & DROP FOR MOBILE
+// ----------------------------------------------------
+const topbar = document.querySelector(".topbar.floating");
+const dragHandle = document.getElementById("dragHandle");
+const categorySelector = document.querySelector(".category-selector");
+
+let isDragging = false;
+let startY = 0;
+let startTranslateY = 0;
+let currentTranslateY = 0;
+let isExpanded = true;
+let maxTranslateY = 0;
+let dragStartTime = 0;
+
+function isMobile() {
+  return window.innerWidth <= 600;
+}
+
+function updateDimensions() {
+  if (!topbar || !dragHandle || !categorySelector) return;
+  
+  if (!isMobile()) {
+    topbar.style.transform = '';
+    topbar.style.transition = '';
+    currentTranslateY = 0;
+    return;
+  }
+
+  const H = topbar.getBoundingClientRect().height;
+  const handleRect = dragHandle.getBoundingClientRect();
+  const selectorRect = categorySelector.getBoundingClientRect();
+  
+  const topbarStyle = window.getComputedStyle(topbar);
+  const paddingTop = parseFloat(topbarStyle.paddingTop) || 10;
+  const gap = parseFloat(topbarStyle.gap) || 8;
+  
+  // Peek height represents height of padding + drag handle + gap + category selector + padding
+  const P = paddingTop + handleRect.height + gap + selectorRect.height + paddingTop;
+  maxTranslateY = Math.max(0, H - P);
+
+  if (!isDragging) {
+    if (isExpanded) {
+      topbar.style.transform = 'translateY(0)';
+      currentTranslateY = 0;
+    } else {
+      topbar.style.transform = `translateY(${maxTranslateY}px)`;
+      currentTranslateY = maxTranslateY;
+    }
+  }
+}
+
+function expandSheet() {
+  if (isMobile() && !isExpanded) {
+    isExpanded = true;
+    updateDimensions();
+  }
+}
+
+function onDragStart(y) {
+  if (!isMobile()) return;
+  isDragging = true;
+  startY = y;
+  startTranslateY = currentTranslateY;
+  dragStartTime = Date.now();
+  topbar.style.transition = 'none'; // Disable transition for 1:1 finger tracking
+}
+
+function onDragMove(y) {
+  if (!isDragging) return;
+  const deltaY = y - startY;
+  let nextTranslateY = startTranslateY + deltaY;
+
+  // Rubber band effect when dragging outside bounds
+  if (nextTranslateY < 0) {
+    nextTranslateY = nextTranslateY * 0.2; 
+  } else if (nextTranslateY > maxTranslateY) {
+    nextTranslateY = maxTranslateY + (nextTranslateY - maxTranslateY) * 0.2;
+  }
+
+  topbar.style.transform = `translateY(${nextTranslateY}px)`;
+  currentTranslateY = nextTranslateY;
+}
+
+function onDragEnd() {
+  if (!isDragging) return;
+  isDragging = false;
+
+  // Restore premium bounce transition
+  topbar.style.transition = 'transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+
+  const dragDistance = Math.abs(currentTranslateY - startTranslateY);
+  const dragDuration = Date.now() - dragStartTime;
+
+  // If clicked/tapped (short duration, small distance), toggle state
+  if (dragDistance < 6 && dragDuration < 250) {
+    isExpanded = !isExpanded;
+  } else {
+    // Snap logic based on drag direction and threshold
+    const threshold = maxTranslateY / 3;
+    if (isExpanded) {
+      if (currentTranslateY > threshold) {
+        isExpanded = false;
+      }
+    } else {
+      const dragUpAmount = maxTranslateY - currentTranslateY;
+      if (dragUpAmount > threshold) {
+        isExpanded = true;
+      }
+    }
+  }
+
+  updateDimensions();
+}
+
+// Attach Touch Events
+if (dragHandle) {
+  dragHandle.addEventListener("touchstart", (e) => {
+    onDragStart(e.touches[0].clientY);
+    e.preventDefault(); // Prevents map/browser drag
+  }, { passive: false });
+
+  window.addEventListener("touchmove", (e) => {
+    if (isDragging) {
+      onDragMove(e.touches[0].clientY);
+      if (e.cancelable) e.preventDefault();
+    }
+  }, { passive: false });
+
+  window.addEventListener("touchend", () => {
+    if (isDragging) {
+      onDragEnd();
+    }
+  });
+
+  // Attach Mouse Events
+  dragHandle.addEventListener("mousedown", (e) => {
+    onDragStart(e.clientY);
+    e.preventDefault();
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (isDragging) {
+      onDragMove(e.clientY);
+      e.preventDefault();
+    }
+  });
+
+  window.addEventListener("mouseup", () => {
+    if (isDragging) {
+      onDragEnd();
+    }
+  });
+
+  // Dynamic layout changes tracking
+  const resizeObserver = new ResizeObserver(() => {
+    updateDimensions();
+  });
+  resizeObserver.observe(topbar);
+  
+  // Listen to orientation/resize changes
+  window.addEventListener("resize", () => {
+    updateDimensions();
   });
 }
 
